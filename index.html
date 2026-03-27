@@ -808,6 +808,10 @@ function opMd(t,tx,cb){E('mdT').textContent=t;E('mdP').textContent=tx;E('mdBg').
 function clMd(){E('mdBg').className='md';mdCb=null}
 
 // ЧИТЫ
+function tgP(){if(!isA())return;CPAN=!CPAN;E('cPn').className=CPAN?'cht':'cht cl';E('cTg').className=CPAN?'chtg op':'chtg'}
+function tgG(){if(!isA()){E('ckG').checked=false;return}GOD=E('ckG').checked;E('gI').style.display=GOD?'block':'none';godB('gB');godB('bBt');godB('oBt');cMsg(GOD?'БОГ x200!':'Выкл')}
+function tgA(){if(!isA()){E('ckA').checked=false;return}AACH=E('ckA').checked;if(AACH){ulkAll();cMsg('Все ачивки!')}else cMsg('Выкл')}
+function chAllA(){if(!isA()){cMsg('Только админ!');return}ulkAll();boom('ВСЕ!');cMsg('234 ачивки!')}
 function ch(n){
 if(!isA()){cMsg('Только админ!');return}var s=curS();
 if(s==='Sg'&&!gDn){gN+=n;E('gC').textContent=gN;boom('+'+n);cMsg('+'+n+'!')}
