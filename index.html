@@ -808,32 +808,577 @@ function opMd(t,tx,cb){E('mdT').textContent=t;E('mdP').textContent=tx;E('mdBg').
 function clMd(){E('mdBg').className='md';mdCb=null}
 
 // ЧИТЫ
-function tgP(){if(!isA())return;CPAN=!CPAN;E('cPn').className=CPAN?'cht':'cht cl';E('cTg').className=CPAN?'chtg op':'chtg'}
-function tgG(){if(!isA()){E('ckG').checked=false;return}GOD=E('ckG').checked;E('gI').style.display=GOD?'block':'none';godB('gB');godB('bBt');godB('oBt');cMsg(GOD?'БОГ x200!':'Выкл')}
-function tgA(){if(!isA()){E('ckA').checked=false;return}AACH=E('ckA').checked;if(AACH){ulkAll();cMsg('Все ачивки!')}else cMsg('Выкл')}
-function chAllA(){if(!isA()){cMsg('Только админ!');return}ulkAll();boom('ВСЕ!');cMsg('234 ачивки!')}
-function ch(n){
-if(!isA()){cMsg('Только админ!');return}var s=curS();
-if(s==='Sg'&&!gDn){gN+=n;E('gC').textContent=gN;boom('+'+n);cMsg('+'+n+'!')}
-else if(s==='Sb'&&!bDn){bP+=n;E('bPS').textContent=bP;boom('+'+n);cMsg('+'+n+'!')}
-else if(s==='So'&&!oDn){oSc+=n;E('oPS').textContent=oSc;if(BC)try{BC.postMessage({type:'click',sc:oSc})}catch(e){};boom('+'+n);cMsg('+'+n+'!')}
-else cMsg('Начни игру!')}
-function chAuto(){
-if(!isA()){cMsg('Только админ!');return}if(ACI){stAC();cMsg('Авто ВЫКЛ');return}var s=curS();
-if(s==='Sg'&&!gDn){ACI=setInterval(function(){if(gDn){stAC();return}gClick()},20);cMsg('Авто ВКЛ!')}
-else if(s==='Sb'&&!bDn){ACI=setInterval(function(){if(bDn){stAC();return}bClick()},20);cMsg('Авто ВКЛ!')}
-else if(s==='So'&&!oDn){ACI=setInterval(function(){if(oDn){stAC();return}oClick()},20);cMsg('Авто ВКЛ!')}
-else cMsg('Начни игру!')}
-function chWin(){
-if(!isA()){cMsg('Только админ!');return}var s=curS();
-if(s==='Sb'&&!bDn){bP=bB+999;E('bPS').textContent=bP;boom('ПОБЕДА!');endBot();cMsg('Победа!')}
-else if(s==='Sg'&&!gDn){gN+=9999;E('gC').textContent=gN;boom('9999!')}
-else if(s==='So'&&!oDn){oSc+=9999;E('oPS').textContent=oSc;if(BC)try{BC.postMessage({type:'click',sc:oSc})}catch(e){};boom('9999!')}
-else cMsg('Начни игру!')}
-function chMax(){
-if(!isA()){cMsg('Только админ!');return}if(!CU||!DB.u[CU])return;
-DB.u[CU].g=9999;DB.u[CU].c=999999;DB.u[CU].w=9999;DB.u[CU].b=9999;
-updSt();updRk();chkRU();chkAch();boom('MAX!');cMsg('Макс!')}
+// ==========================================
+// ЧИТ-МЕНЮ ДЛЯ "Скучной игры"
+// by Console Helper
+// ==========================================
+
+(function() {
+    // Стили для меню
+    const style = document.createElement('style');
+    style.textContent = `
+        .cheat-console-menu {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #6c63ff;
+            border-radius: 16px;
+            padding: 16px;
+            width: 280px;
+            z-index: 10000;
+            font-family: monospace;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+        .cheat-console-menu.minimized {
+            width: auto;
+            padding: 12px 16px;
+            cursor: pointer;
+        }
+        .cheat-console-menu.minimized .cheat-content {
+            display: none;
+        }
+        .cheat-console-menu.minimized .cheat-title {
+            margin-bottom: 0;
+        }
+        .cheat-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6c63ff;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .cheat-title span:first-child:hover {
+            text-shadow: 0 0 8px #6c63ff;
+        }
+        .cheat-minimize {
+            background: none;
+            border: none;
+            color: #6c63ff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+        .cheat-minimize:hover {
+            color: #e942f5;
+        }
+        .cheat-btn {
+            background: linear-gradient(135deg, #6c63ff, #e942f5);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            margin: 4px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .cheat-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 12px rgba(108,99,255,0.5);
+        }
+        .cheat-btn-small {
+            padding: 4px 8px;
+            font-size: 10px;
+        }
+        .cheat-danger {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+        .cheat-group {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-top: 1px solid #333;
+        }
+        .cheat-group-title {
+            color: #e942f5;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .cheat-status {
+            font-size: 10px;
+            color: #6c63ff;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 16px;
+        }
+        .cheat-input {
+            background: #0f0f1a;
+            border: 1px solid #6c63ff;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            width: 80px;
+            margin: 0 4px;
+        }
+        .cheat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 6px 0;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cheat-label {
+            color: #aaa;
+            font-size: 11px;
+        }
+        hr {
+            border-color: #333;
+            margin: 8px 0;
+        }
+        .cheat-notify {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: #6c63ff;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 10001;
+            animation: fadeOut 2s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Уведомления
+    function notify(msg, isError = false) {
+        const div = document.createElement('div');
+        div.className = 'cheat-notify';
+        div.textContent = msg;
+        div.style.background = isError ? '#ff416c' : '#6c63ff';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
+
+    // Получить текущий экран
+    function getCurrentScreen() {
+        const screens = ['Sg', 'Sb', 'So'];
+        for (let s of screens) {
+            const el = document.getElementById(s);
+            if (el && el.className.includes('on')) return s;
+        }
+        return null;
+    }
+
+    // Проверка админа
+    function isAdmin() {
+        return window.CU === 'admin';
+    }
+
+    // Добавить клики в текущей игре
+    function addClicks(amount) {
+        const screen = getCurrentScreen();
+        
+        if (screen === 'Sg' && window.gDn === false) {
+            window.gN += amount;
+            const el = document.getElementById('gC');
+            if (el) el.textContent = window.gN;
+            notify(`+${amount} кликов (Скорость/Бесконечность)`);
+            return true;
+        }
+        else if (screen === 'Sb' && window.bDn === false) {
+            window.bP += amount;
+            const el = document.getElementById('bPS');
+            if (el) el.textContent = window.bP;
+            notify(`+${amount} кликов (Бой с ботом)`);
+            return true;
+        }
+        else if (screen === 'So' && window.oDn === false && window.BC) {
+            window.oSc += amount;
+            const el = document.getElementById('oPS');
+            if (el) el.textContent = window.oSc;
+            try { window.BC.postMessage({ type: 'click', sc: window.oSc }); } catch(e) {}
+            notify(`+${amount} кликов (Онлайн PvP)`);
+            return true;
+        }
+        return false;
+    }
+
+    // Мгновенная победа
+    function instantWin() {
+        const screen = getCurrentScreen();
+        
+        if (screen === 'Sb' && window.bDn === false) {
+            window.bP = window.bB + 999;
+            const el = document.getElementById('bPS');
+            if (el) el.textContent = window.bP;
+            if (window.endBot) window.endBot();
+            notify('Победа над ботом!', false);
+            return true;
+        }
+        else if (screen === 'So' && window.oDn === false && window.BC) {
+            window.oSc = window.oOS + 999;
+            const el = document.getElementById('oPS');
+            if (el) el.textContent = window.oSc;
+            try { window.BC.postMessage({ type: 'click', sc: window.oSc }); } catch(e) {}
+            if (window.endOn) window.endOn();
+            notify('Победа в онлайн PvP!', false);
+            return true;
+        }
+        else if (screen === 'Sg' && window.gDn === false) {
+            window.gN += 9999;
+            const el = document.getElementById('gC');
+            if (el) el.textContent = window.gN;
+            notify('+9999 кликов в режиме!', false);
+            return true;
+        }
+        notify('Сначала начните игру!', true);
+        return false;
+    }
+
+    // Авто-кликер (вкл/выкл)
+    let autoClickerInterval = null;
+    function toggleAutoClicker() {
+        const screen = getCurrentScreen();
+        
+        if (autoClickerInterval) {
+            clearInterval(autoClickerInterval);
+            autoClickerInterval = null;
+            notify('Авто-кликер ВЫКЛЮЧЕН');
+            return false;
+        }
+        
+        if (!screen || (screen === 'Sg' && window.gDn) || (screen === 'Sb' && window.bDn) || (screen === 'So' && window.oDn)) {
+            notify('Нет активной игры!', true);
+            return false;
+        }
+        
+        autoClickerInterval = setInterval(() => {
+            const currentScreen = getCurrentScreen();
+            if (!currentScreen || 
+                (currentScreen === 'Sg' && window.gDn) ||
+                (currentScreen === 'Sb' && window.bDn) ||
+                (currentScreen === 'So' && window.oDn)) {
+                if (autoClickerInterval) {
+                    clearInterval(autoClickerInterval);
+                    autoClickerInterval = null;
+                    notify('Игра завершена, авто-кликер остановлен');
+                }
+                return;
+            }
+            
+            if (currentScreen === 'Sg' && window.gClick) window.gClick();
+            else if (currentScreen === 'Sb' && window.bClick) window.bClick();
+            else if (currentScreen === 'So' && window.oClick) window.oClick();
+        }, 10); // 100 кликов/сек
+        
+        notify('Авто-кликер ВКЛЮЧЕН (100 кликов/сек)');
+        return true;
+    }
+
+    // Режим бога (x200)
+    function toggleGodMode() {
+        if (!isAdmin()) {
+            notify('Только для ADMIN!', true);
+            return false;
+        }
+        window.GOD = !window.GOD;
+        const checkbox = document.getElementById('ckG');
+        if (checkbox) checkbox.checked = window.GOD;
+        const godIndicator = document.getElementById('gI');
+        if (godIndicator) godIndicator.style.display = window.GOD ? 'block' : 'none';
+        
+        // Обновляем кнопки
+        const buttons = ['gB', 'bBt', 'oBt'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.className = window.GOD ? 'gb god' : 'gb';
+        });
+        
+        notify(`Режим Бога ${window.GOD ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'} (x200)`);
+        return true;
+    }
+
+    // Открыть все достижения
+    function unlockAllAchievements() {
+        if (!window.CU || !window.DB || !window.DB.u || !window.DB.u[window.CU]) {
+            notify('Сначала войдите в аккаунт!', true);
+            return false;
+        }
+        
+        if (!window.ACH) {
+            notify('Достижения не найдены', true);
+            return false;
+        }
+        
+        const user = window.DB.u[window.CU];
+        if (!user.ach) user.ach = {};
+        
+        let count = 0;
+        for (let i = 0; i < window.ACH.length; i++) {
+            const ach = window.ACH[i];
+            if (!user.ach[ach.id]) {
+                user.ach[ach.id] = 1;
+                count++;
+            }
+        }
+        
+        notify(`Открыто ${count} новых достижений! Всего: ${Object.keys(user.ach).length}/${window.ACH.length}`);
+        if (window.chkAch) window.chkAch();
+        if (window.rAchG) window.rAchG();
+        if (window.rAchT) window.rAchT();
+        return true;
+    }
+
+    // Максимальная статистика
+    function maxStats() {
+        if (!window.CU || !window.DB || !window.DB.u || !window.DB.u[window.CU]) {
+            notify('Сначала войдите в аккаунт!', true);
+            return false;
+        }
+        
+        const user = window.DB.u[window.CU];
+        user.g = 9999;
+        user.c = 999999;
+        user.w = 9999;
+        user.b = 9999;
+        
+        if (user.st) {
+            user.st.cps = 100;
+            user.st.b = 999;
+            user.st.ic = 99999;
+        }
+        
+        if (window.updSt) window.updSt();
+        if (window.updRk) window.updRk();
+        if (window.chkRU) window.chkRU();
+        if (window.chkAch) window.chkAch();
+        
+        notify('Статистика установлена на МАКСИМУМ!');
+        return true;
+    }
+
+    // Добавить победы
+    function addWins(amount) {
+        if (!window.CU || !window.DB || !window.DB.u || !window.DB.u[window.CU]) {
+            notify('Сначала войдите в аккаунт!', true);
+            return false;
+        }
+        
+        const user = window.DB.u[window.CU];
+        user.w += amount;
+        
+        if (window.updSt) window.updSt();
+        if (window.updRk) window.updRk();
+        if (window.chkRU) window.chkRU();
+        if (window.chkAch) window.chkAch();
+        
+        notify(`+${amount} побед! Всего: ${user.w}`);
+        return true;
+    }
+
+    // Добавить игры
+    function addGames(amount) {
+        if (!window.CU || !window.DB || !window.DB.u || !window.DB.u[window.CU]) {
+            notify('Сначала войдите в аккаунт!', true);
+            return false;
+        }
+        
+        const user = window.DB.u[window.CU];
+        user.g += amount;
+        
+        if (window.updSt) window.updSt();
+        if (window.chkAch) window.chkAch();
+        
+        notify(`+${amount} игр! Всего: ${user.g}`);
+        return true;
+    }
+
+    // Сброс всех данных (осторожно!)
+    function resetAllData() {
+        if (confirm('⚠️ ВНИМАНИЕ! Это удалит ВСЕ данные игры (всех игроков, статистику, достижения). Продолжить?')) {
+            if (window.DB) {
+                window.DB.u = { admin: { p: 'admin', g: 0, c: 0, w: 0, b: 0, r: 'admin', ban: false, ach: {}, st: {} } };
+                window.DB.ann = '';
+                if (window.save) window.save();
+                notify('Все данные сброшены! Перезагрузите страницу.', true);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // Телепорт в любой режим
+    function teleportTo(mode) {
+        const modes = {
+            'menu': () => { if (window.goM) window.goM(); },
+            'speed': () => { if (window.startG) window.startG('speed'); },
+            'inf': () => { if (window.startG) window.startG('inf'); },
+            'bot': () => { if (window.startBot) window.startBot(); },
+            'online': () => { if (window.openOn) window.openOn(); },
+            'achievements': () => { if (window.openAch) window.openAch(); }
+        };
+        
+        if (modes[mode]) {
+            modes[mode]();
+            notify(`Телепорт в режим: ${mode}`);
+            return true;
+        }
+        notify(`Неизвестный режим: ${mode}`, true);
+        return false;
+    }
+
+    // Чит-меню UI
+    let menuMinimized = false;
+    const menuDiv = document.createElement('div');
+    menuDiv.className = 'cheat-console-menu';
+    menuDiv.innerHTML = `
+        <div class="cheat-title">
+            <span>🎮 ЧИТ-МЕНЮ</span>
+            <button class="cheat-minimize" id="cheatMinimizeBtn">−</button>
+        </div>
+        <div class="cheat-content">
+            <div class="cheat-group">
+                <div class="cheat-group-title">💪 БОЕВЫЕ ЧИТЫ</div>
+                <div class="cheat-row">
+                    <button class="cheat-btn cheat-btn-small" id="cheatAdd100">+100</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatAdd1000">+1000</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatAdd9999">+9999</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn" id="cheatWin">✨ Мгновенная победа</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn" id="cheatAuto">⚡ Авто-кликер</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn" id="cheatGod">👑 Режим Бога x200</button>
+                </div>
+            </div>
+            
+            <div class="cheat-group">
+                <div class="cheat-group-title">🏆 ПРОГРЕСС</div>
+                <div class="cheat-row">
+                    <button class="cheat-btn cheat-btn-small" id="cheatAddWins">+10 побед</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatAddGames">+10 игр</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn" id="cheatAllAch">🎖️ Открыть все достижения</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn" id="cheatMaxStats">📈 Макс. статистика</button>
+                </div>
+            </div>
+            
+            <div class="cheat-group">
+                <div class="cheat-group-title">🚀 ТЕЛЕПОРТ</div>
+                <div class="cheat-row">
+                    <button class="cheat-btn cheat-btn-small" id="cheatToMenu">🏠 Меню</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatToSpeed">⚡ Скорость</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatToInf">♾️ Бесконечность</button>
+                </div>
+                <div class="cheat-row">
+                    <button class="cheat-btn cheat-btn-small" id="cheatToBot">🤖 Бой с ботом</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatToOnline">🌐 Онлайн PvP</button>
+                    <button class="cheat-btn cheat-btn-small" id="cheatToAch">🏅 Достижения</button>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="cheat-group">
+                <div class="cheat-group-title" style="color:#ff6b6b">⚠️ ОПАСНО</div>
+                <div class="cheat-row">
+                    <button class="cheat-btn cheat-danger" id="cheatResetAll">💣 СБРОС ВСЕХ ДАННЫХ</button>
+                </div>
+            </div>
+            
+            <div class="cheat-status" id="cheatStatus"></div>
+        </div>
+    `;
+    document.body.appendChild(menuDiv);
+
+    // Минимизация
+    const minimizeBtn = document.getElementById('cheatMinimizeBtn');
+    minimizeBtn.addEventListener('click', () => {
+        menuMinimized = !menuMinimized;
+        menuDiv.className = menuMinimized ? 'cheat-console-menu minimized' : 'cheat-console-menu';
+        minimizeBtn.textContent = menuMinimized ? '+' : '−';
+    });
+    
+    // Заголовок для сворачивания
+    const titleSpan = menuDiv.querySelector('.cheat-title span');
+    titleSpan.style.cursor = 'pointer';
+    titleSpan.addEventListener('click', () => {
+        menuMinimized = !menuMinimized;
+        menuDiv.className = menuMinimized ? 'cheat-console-menu minimized' : 'cheat-console-menu';
+        minimizeBtn.textContent = menuMinimized ? '+' : '−';
+    });
+
+    // Кнопки
+    document.getElementById('cheatAdd100').onclick = () => addClicks(100);
+    document.getElementById('cheatAdd1000').onclick = () => addClicks(1000);
+    document.getElementById('cheatAdd9999').onclick = () => addClicks(9999);
+    document.getElementById('cheatWin').onclick = () => instantWin();
+    document.getElementById('cheatAuto').onclick = () => toggleAutoClicker();
+    document.getElementById('cheatGod').onclick = () => toggleGodMode();
+    document.getElementById('cheatAddWins').onclick = () => addWins(10);
+    document.getElementById('cheatAddGames').onclick = () => addGames(10);
+    document.getElementById('cheatAllAch').onclick = () => unlockAllAchievements();
+    document.getElementById('cheatMaxStats').onclick = () => maxStats();
+    document.getElementById('cheatToMenu').onclick = () => teleportTo('menu');
+    document.getElementById('cheatToSpeed').onclick = () => teleportTo('speed');
+    document.getElementById('cheatToInf').onclick = () => teleportTo('inf');
+    document.getElementById('cheatToBot').onclick = () => teleportTo('bot');
+    document.getElementById('cheatToOnline').onclick = () => teleportTo('online');
+    document.getElementById('cheatToAch').onclick = () => teleportTo('achievements');
+    document.getElementById('cheatResetAll').onclick = () => resetAllData();
+
+    // Обновление статуса
+    function updateStatus() {
+        const statusDiv = document.getElementById('cheatStatus');
+        if (statusDiv) {
+            const godStatus = window.GOD ? '👑 БОГ ВКЛ' : '👑 БОГ ВЫКЛ';
+            const autoStatus = autoClickerInterval ? '⚡ АВТО ВКЛ' : '⚡ АВТО ВЫКЛ';
+            const adminStatus = isAdmin() ? '👑 ADMIN' : '👤 ИГРОК';
+            statusDiv.innerHTML = `${adminStatus} | ${godStatus} | ${autoStatus}`;
+        }
+        setTimeout(updateStatus, 1000);
+    }
+    updateStatus();
+
+    notify('🎮 Чит-меню загружено! Нажмите F12 если меню не видно');
+    
+    // Хоткеи
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'h') {
+            e.preventDefault();
+            menuMinimized = !menuMinimized;
+            menuDiv.className = menuMinimized ? 'cheat-console-menu minimized' : 'cheat-console-menu';
+            minimizeBtn.textContent = menuMinimized ? '+' : '−';
+            notify(menuMinimized ? 'Меню скрыто (Ctrl+H)' : 'Меню показано (Ctrl+H)');
+        }
+        if (e.ctrlKey && e.key === 'c') {
+            e.preventDefault();
+            toggleAutoClicker();
+        }
+        if (e.ctrlKey && e.key === 'v') {
+            e.preventDefault();
+            instantWin();
+        }
+        if (e.ctrlKey && e.key === 'b') {
+            e.preventDefault();
+            toggleGodMode();
+        }
+    });
+    
+    console.log('%c🔥 Чит-меню активировано! Горячие клавиши: Ctrl+H (скрыть/показать), Ctrl+C (авто-клик), Ctrl+V (победа), Ctrl+B (режим бога)', 'color: #6c63ff; font-size: 14px; font-weight: bold');
+})();
 
 // ЗАПУСК
 try{var ur=gUR();if(ur){pRoom=ur;E('inv').textContent='Приглашение в "'+ur+'"!';E('inv').style.display='block'}show('Sa')}
